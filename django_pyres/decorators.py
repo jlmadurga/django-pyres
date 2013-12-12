@@ -1,4 +1,4 @@
-from functools import update_wrapper
+from functools import update_wrapper, wraps
 from django_pyres.conf import settings
 from django import db
 from .core import pyres
@@ -48,7 +48,7 @@ Class that wraps a function to enqueue in pyres
             class_str = '%s.%s' % (self.__module__, self.__name__)
             self._resque.enqueue_from_string(class_str, queue, *args)
         else:
-            return self.func(*args, **kwargs)
+            return self(*args, **kwargs)
 
     def enqueue_at(self, dt, *args, **kwargs):
         queue = kwargs.pop('queue', self.queue)
@@ -58,7 +58,13 @@ Class that wraps a function to enqueue in pyres
         self._resque.enqueue_at_from_string(dt, class_str, queue, *args)
 
     def __call__(self, *args, **kwargs):
-        return self.func(*args, **kwargs)
+        try:
+            return self.func(*args, **kwargs)
+        except:
+            if hasattr(settings, 'RAVEN_CONFIG'):
+                from raven.contrib.django.raven_compat.models import client
+                client.captureException()
+            raise
 
     def __repr__(self):
         return 'Job(func=%s, queue=%s)' % (self.func, self.queue)
