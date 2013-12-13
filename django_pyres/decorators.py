@@ -25,7 +25,7 @@ Class that wraps a function to enqueue in pyres
 
         # Allow this class to be called by pyres
         self.queue = str(queue)
-        self.perform = self.func
+        self.perform = self.__call__
 
         # Wrap func
         update_wrapper(self, func)
