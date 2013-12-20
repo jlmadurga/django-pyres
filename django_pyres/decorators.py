@@ -62,7 +62,7 @@ Class that wraps a function to enqueue in pyres
             return self.func(*args, **kwargs)
         except:
             if hasattr(settings, 'RAVEN_CONFIG'):
-                from raven.contrib.django.raven_compat.models import client
+                from raven.contrib.django.models import client
                 client.captureException()
             raise
 
