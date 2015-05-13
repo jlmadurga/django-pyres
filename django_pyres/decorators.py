@@ -4,8 +4,13 @@ from django import db
 from .core import pyres
 
 
-def close_connection_after(func):
+def reset_db_connection(func):
     def wrapper(*args, **kwargs):
+        """ Because forked processes using connection pool
+        can throw errors, close db to reinitialize inside
+        child process. """
+        if settings.PYRES_USE_QUEUE:
+            db.close_connection()
         result = func(*args, **kwargs)
         if settings.PYRES_USE_QUEUE:
             db.close_connection()
@@ -20,7 +25,7 @@ Class that wraps a function to enqueue in pyres
     _resque_conn = pyres
 
     def __init__(self, func, queue):
-        self.func = close_connection_after(func)
+        self.func = reset_db_connection(func)
         #self.priority = priority
 
         # Allow this class to be called by pyres
