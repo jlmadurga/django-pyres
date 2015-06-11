@@ -3,6 +3,12 @@ from django_pyres.conf import settings
 from django import db
 from .core import pyres
 
+try:
+    # This is prefered in >1.6
+    close_connections = db.close_old_connections
+except AttributeError:
+    # This is deprecated in 1.6 and removed in 1.8
+    close_connections = db.close_connection
 
 def reset_db_connection(func):
     def wrapper(*args, **kwargs):
@@ -10,10 +16,10 @@ def reset_db_connection(func):
         can throw errors, close db to reinitialize inside
         child process. """
         if settings.PYRES_USE_QUEUE:
-            db.close_connection()
+            close_connections()
         result = func(*args, **kwargs)
         if settings.PYRES_USE_QUEUE:
-            db.close_connection()
+            close_connections()
         return result
     update_wrapper(wrapper, func)
     return wrapper
@@ -79,4 +85,3 @@ def job(queue, cls=Job):
     def _task(f):
         return cls(f, queue)
     return _task
-
