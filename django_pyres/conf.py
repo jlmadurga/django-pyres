@@ -10,6 +10,7 @@ class PyresConf(AppConf):
     WORKER_LOGFILE = None
     WORKER_TIMEOUT= None
     MANAGER_POOL_SIZE=2
+    SCHEDULER_PIDFILE = None
 
 
     class Meta:
